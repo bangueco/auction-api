@@ -85,7 +85,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := lib.GenerateToken(user.ID)
+	token, err := lib.GenerateToken(existingUser.ID)
 
 	if err != nil {
 		helper.WriteResponseMessage(w, "Internal server error", http.StatusInternalServerError)
