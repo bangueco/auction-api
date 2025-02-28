@@ -9,10 +9,11 @@ import (
 	"github.com/bangueco/auction-api/internal/handlers"
 	"github.com/bangueco/auction-api/internal/handlers/helper"
 	"github.com/bangueco/auction-api/internal/lib"
+	"github.com/bangueco/auction-api/internal/middleware"
 	"github.com/bangueco/auction-api/internal/repositories"
 	"github.com/bangueco/auction-api/internal/services"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddle "github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 )
 
@@ -43,9 +44,9 @@ func main() {
 
 	// Initialize router
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.StripSlashes)
+	r.Use(chimiddle.Logger)
+	r.Use(chimiddle.Recoverer)
+	r.Use(chimiddle.StripSlashes)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		helper.WriteResponseMessage(w, "404 Route Not found", http.StatusNotFound)
@@ -61,10 +62,12 @@ func main() {
 	})
 
 	r.Route("/api/items", func(r chi.Router) {
+		r.Use(middleware.AuthGuard)
 		r.Get("/", itemHandler.GetItems)
 		r.Get("/{id}", itemHandler.GetItemByID)
 		r.Post("/", itemHandler.CreateItem)
 		r.Put("/{id}", itemHandler.UpdateItem)
+		r.Delete("/{id}", itemHandler.DeleteItem)
 	})
 
 	// Start server
