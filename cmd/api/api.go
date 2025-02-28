@@ -57,6 +57,7 @@ func main() {
 
 	r.Route("/api/auth", func(r chi.Router) {
 		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
 	})
 
 	r.Route("/api/items", func(r chi.Router) {
@@ -67,6 +68,6 @@ func main() {
 	})
 
 	// Start server
-	log.Printf("Starting server on port %s", cfg.PORT)
+	log.Printf("Server started on port %s", cfg.PORT)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.PORT), r))
 }
