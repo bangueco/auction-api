@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+type UserIDType string
+
+const UserIDKey UserIDType = "userId"
+
 type ResponseMessage struct {
 	Message string `json:"messsage"`
 }

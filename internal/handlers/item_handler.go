@@ -9,6 +9,7 @@ import (
 	"github.com/bangueco/auction-api/internal/models"
 	"github.com/bangueco/auction-api/internal/services"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 )
 
 type ItemHandler struct {
@@ -77,7 +78,14 @@ func (i *ItemHandler) CreateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, err := i.ItemService.CreateItem(newItem)
+	userId, ok := r.Context().Value(helper.UserIDKey).(int64)
+
+	if !ok {
+		helper.WriteResponseMessage(w, "User not authenticated", http.StatusBadRequest)
+		return
+	}
+
+	item, err := i.ItemService.CreateItem(models.Item{ItemName: newItem.ItemName, BidAmount: newItem.BidAmount, AuctionedBy: userId})
 
 	if err != nil {
 		helper.WriteResponseMessage(w, "Error creating item", http.StatusInternalServerError)
@@ -120,4 +128,24 @@ func (i *ItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helper.WriteResponse(w, updatedItem, http.StatusOK)
+}
+
+func (i *ItemHandler) DeleteItem(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "id")
+
+	id, err := helper.ConvertStringToInt64(idParam)
+
+	if err != nil {
+		helper.WriteResponseMessage(w, "Invalid ID Parameter", http.StatusBadRequest)
+		return
+	}
+
+	err = i.ItemService.DeleteItem(id)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		helper.WriteResponseMessage(w, "Item does not exist", http.StatusBadRequest)
+		return
+	}
+
+	helper.WriteResponse(w, nil, http.StatusNoContent)
 }
